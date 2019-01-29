@@ -1,0 +1,266 @@
+
+
+<!doctype html>
+<html>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+   <meta http-equiv="Pragma" content="no-cache" />
+   <meta charset="utf-8">
+   <title>BSI - Ynov Aix</title>
+   <link rel="stylesheet" href="./resources/nunito.css">
+   <link rel="stylesheet" href="./resources/all.css">
+   <link rel="stylesheet" href="./resources/styles.css">
+   <style>
+      .frmField{background-color:white; color:#495057; line-height: 1.25; font-size: 16px; font-family: 'Roboto', sans-serif; border:0; padding: 10px; border:1px solid #dbdbdb;  border-radius: 3px; width:90%;}
+      .frmLabel{display: block; margin-bottom: 10px; font-weight: bold;}
+      .frmValidation{font-size: 13px; }
+      .frmIcon{color:#EB0029;}
+      .frmValidation--passed .frmIcon{color:#0fa140;}        
+   </style>
+   <script src="./resources/vue.js"></script>
+   <div id="app">
+      <div id="login" :style="searched ? 'margin-top:30px;' : 'height:100%;'">
+         <div id="description">
+	    <img style="margin-left:3px" height="120px" src="./img/logo.png"/>
+            <h1>Password Tester</h1>
+            Le BSI d'Ynov Aix-en-Provence vous propose un outil pour tester vos mots de passe et vérifier qu'ils n'ont pas été compromis !<br>
+	    <div style="text-align:right;"><a id="hover_infos"><img src="./img/infos.png"></a></div>
+	    <br><br><FONT COLOR="red" ><b>Attention, cet outil ne fonctionne pas sous Internet Explorer !</b></FONT>
+         </div>
+         <!-- <div id="form">
+            <form @submit.prevent="doLogin">
+                <label for="email">Email</label>
+                <input type="text" id="email" v-model="email" placeholder="me@example.com" autocomplete="off">
+                <button type="submit">Testez votre mail</button>
+            </form>
+            </div> -->
+         <div id="form">
+            <form @submit.prevent="doPass">
+               <label for="password">Testez !</label>&nbsp;
+               <i class="fas" :class="hidePassword ? 'fa-eye-slash' : 'fa-eye'" @click="hidePassword = !hidePassword"></i>
+	       <input :type="hidePassword ? 'password' : 'true'" id="password" v-model="password" placeholder="********" autocomplete="off" name="password" class="frmField" @input="password_check">
+                  <!--label class="frmLabel" for="password">Password</label>
+                  <input placeholder="Enter your password" name="password" class="frmField" type="password" @input="password_check" v-model="message" /-->
+               <p>Respect des standards de sécurité du BSI :</p>
+               <p class="frmValidation" :class="{'frmValidation--passed' : password.length > 8}"><i class="frmIcon fas" :class="password.length > 8 ? 'fa-check' : 'fa-times'" :style="password.length > 0 ? 'visibility: visible;' : 'visibility: hidden;'"></i> Longueur supérieure à 8 caractères</p>
+               <p class="frmValidation" :class="{'frmValidation--passed' :has_uppercase }"><i class="frmIcon fas" :class="has_uppercase ? 'fa-check' : 'fa-times'" :style="password.length > 0 ? 'visibility: visible;' : 'visibility: hidden;'"></i> Lettre Majuscule</p>
+               <p class="frmValidation" :class="{'frmValidation--passed' :has_lowercase }"><i class="frmIcon fas" :class="has_lowercase ? 'fa-check' : 'fa-times'" :style="password.length > 0 ? 'visibility: visible;' : 'visibility: hidden;'"></i> Lettre Minuscule</p>
+               <p class="frmValidation" :class="{'frmValidation--passed' : has_number }"><i class="frmIcon fas" :class="has_number ? 'fa-check' : 'fa-times'" :style="password.length > 0 ? 'visibility: visible;' : 'visibility: hidden;'"></i> Chiffre</p>
+               <p class="frmValidation" :class="{'frmValidation--passed' : has_special }"><i class="frmIcon fas" :class="has_special ? 'fa-check' : 'fa-times'" :style="password.length > 0 ? 'visibility: visible;' : 'visibility: hidden;'"></i> Caractère spécial</p>
+               <br>
+               <button type="submit">Vérifiez que votre mot de passe n'a pas été compromis</button>
+            </form>
+         </div>
+         <div id="result" :style="searched ? 'background: linear-gradient(to right, ' + (is_safe ? 'green' : 'red') + ' 0%,' + (is_safe ? 'green' : 'red') + ' 6%,' + '#34495e 6%,#34495e 6%, #34495e 100%);':''">
+	    <a href="https://haveibeenpwned.com/PwnedWebsites" target="_blank" style="color:#ecf0f1;">Sites Web Compromis</a><br><br>
+            <label for="email">Résultat :</label>
+            <p v-model="result" :class="{'frmValidation--passed' : is_safe }"><i class="frmIcon fas" :class="is_safe ? 'fa-check' : 'fa-times'" :style="searched ? 'visibility: visible;' : 'visibility: hidden;'"></i><b> {{ result }}</b></p>
+	    Ces r&eacute;sultats se basent sur la Pwned Passwords API de <a href="https://haveibeenpwned.com">Have I Been Pwned</a>.
+	</div>
+      </div>
+   
+   <div id="preco" :style="searched ? '' : 'display:none;'">
+      <table>
+	<tr id="reco_title">
+           <td colspan="3">
+                3 recommandations pour renforcer vos mots de passe !
+           <td>
+         </tr>
+         <tr>
+           <td>
+	     <span class="no_preco">1</span>
+	     <div class="onglet_preco">
+               <a href="https://www.youtube.com/watch?v=XTnDKJl1zOQ" target="_blank">
+	  	  Utilisez un gestionnaire<br>de mots de passe comme KeePass !<br>
+		  <img src="./img/LogoKeyPass.jpg">
+               </a>
+	     </div>
+           </td>
+           <td>
+	     <span class="no_preco">2</span>
+	     <div class="onglet_preco">
+               <a href="https://strongpasswordgenerator.com/" target="_blank">
+                 G&eacute;n&eacute;rez vos mots<br>de passe al&eacute;atoirement !<br>
+	         <img src="./img/cat.gif">
+               </a>
+	     </div>
+           </td>
+           <td>
+             <span class="no_preco">3</span>
+             <div class="onglet_preco">
+               <a href="https://www.ssi.gouv.fr/guide/mot-de-passe/" target="_blank">
+                 Utilisez un mot de passe unique<br>par application !<br>
+		 <img src="./img/pants.png">
+               </a>
+             </div>
+           </td>
+         </tr>
+      </table><br>
+   </div>
+   </div>
+   <script src="./js/jquery.min.js"></script>
+   <script src="./js/jquery.qtip.js"></script>
+   <link rel="stylesheet" href="./js/jquery.qtip.css">
+   <script>
+$(document).ready(function() {
+    $('#hover_infos').qtip({
+        content: {
+            	text: 'Cet outil manipule vos donn&eacute;es conform&eacute;ment aux r&egrave;gles de confidentialit&eacute; du BSI. </br>Pour plus d\'informations voir <a href="https://haveibeenpwned.com/API/v2#PwnedPasswords" target="_blank">ici</a>.',
+		title: {
+			text: 'Informations',
+			button: true
+		}
+        },
+	hide: { 
+		event: 'click',
+		inactive: 4000
+	}
+    });
+});
+/*$('#hover_infos').qtip({
+    content: {
+        text: 'Tips plugin element'
+    },
+    events: {
+        render: function(event, api) {
+            // Grab the tip element
+            var elem = api.elements.tip;
+        }
+    }
+})*/
+   </script>
+   <script src="./resources/vue2.js"></script>
+   <script src="./resources/sweetalert2.js"></script>
+   <script>
+      const vm = new Vue({
+          el: '#app',
+          data: {
+              email: '',
+              result: '',
+              password: '',
+              hidePassword:  true,
+              has_number:    false,
+              has_lowercase: false,
+              has_uppercase: false,
+              has_special:   false,
+              is_safe:       false,
+              searched:      false,
+          },
+          methods: {
+              doLogin() {
+                  this.result = '';
+                  // create first dialog to show that the password is being validated right now.
+                  swal({
+                      onOpen: async () => {
+                          swal.showLoading();
+      
+                          try {
+                              // generate the SHA1 hash and pass the first 5 characters to the API.
+                              // change password par email
+                              const response = await fetch(`https://haveibeenpwned.com/api/v2/breachedaccount/${this.email}`);
+      
+                              if (response.status === 200) {
+                                  // split the result by line and check, if one line matches our hash.
+                                  // remember, that as a result, we only get back the second part of the hash from
+                                  // the API without our submitted feedback. That's the reason, why we have
+                                  // to compare it to our hash by also omitting the first 5 characters.
+                                  const rows = (await response.text()).split('\r\n');
+                                  const match = rows.find(value => value.split(':')[0] === this.email);
+      
+                                  if (match && match.split(':')[1] >= 1) {
+                                      this.result = "KO : Used " + match.split(':')[1] + " times";
+                                  } else {
+                                      this.result = "OK";
+                                  }
+      
+                              } else {
+                                  this.result = "An error occured";
+                              }
+                          } catch (error) {
+                              console.error(error);
+                          }
+                          swal.close();
+                          return;
+                      }
+                  });
+              },
+              doPass() {
+                  this.result = '';
+                  // create first dialog to show that the password is being validated right now.
+                  swal({
+                      onOpen: async () => {
+                          swal.showLoading();
+      
+                          try {
+                              // generate the SHA1 hash and pass the first 5 characters to the API.
+                              const sha1hash = (await sha1(this.password)).toUpperCase();
+                              const response = await fetch(`https://api.pwnedpasswords.com/range/${sha1hash.slice(0, 5)}`);
+      
+                              if (response.status === 200) {
+                                  // split the result by line and check, if one line matches our hash.
+                                  // remember, that as a result, we only get back the second part of the hash from
+                                  // the API without our submitted feedback. That's the reason, why we have
+                                  // to compare it to our hash by also omitting the first 5 characters.
+                                  const rows = (await response.text()).split('\r\n');
+                                  const match = rows.find(value => value.split(':')[0] === sha1hash.slice(5));
+      
+                                  this.searched = true;
+                                  if (match && match.split(':')[1] > 0) {
+                                      this.result = "Mauvaise nouvelle ! Votre mot de passe a été compromis " + match.split(':')[1] + " fois";
+                                      this.is_safe = false;
+                                  } else {
+                                      this.result = "Bonne nouvelle ! Votre mot de passe n'a pas été compromis. ";
+                                      this.is_safe = true;
+                                  }
+      
+                              } else {
+                                  this.result = "Erreur";
+                              }
+                          } catch (error) {
+                              console.error(error);
+                          }
+                          swal.close();
+                          return;
+                      }
+                  });
+              },
+              password_check() {
+                  this.has_number    = /\d/.test(this.password);
+                  this.has_lowercase = /[a-z]/.test(this.password);
+                  this.has_uppercase = /[A-Z]/.test(this.password);
+                  this.has_special   = /[!@#\$%\^\&*\)\(+=._,;:\{\}~\]\[-]/.test(this.password);
+		  this.searched = false;
+		  this.result = '';
+              }
+          }
+      });
+      
+      async function sha1(password) {
+          // We transform the string into an arraybuffer.
+          const buffer = new TextEncoder().encode(password);
+      
+          const hash = await crypto.subtle.digest('SHA-1', buffer);
+          return hex(hash);
+      }
+      
+      function hex(buffer) {
+          const hexCodes = [];
+          const view = new DataView(buffer);
+          for (let i = 0; i < view.byteLength; i += 4) {
+              // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
+              const value = view.getUint32(i)
+              // toString(16) will give the hex representation of the number without padding
+              const stringValue = value.toString(16)
+              // We use concatenation and slice for padding
+              const padding = '00000000'
+              const paddedValue = (padding + stringValue).slice(-padding.length)
+              hexCodes.push(paddedValue);
+          }
+      
+          // Join all the hex strings into one
+          return hexCodes.join('');
+      }
+   </script>
+</html>
+
